@@ -21,9 +21,12 @@ These additional references should also help you:
 * [Gradle Build Scans – insights for your project's build](https://scans.gradle.com#gradle)
 
 echo "# bookshelf" >> README.md
+// it should be run under the project folder
+// cd /c/your/folder/project
 git init
-git add README.md
-git commit -m "first commit"
+git add .
+git add -f HELP.md (optional)
+git commit -m "first commit" // commit is upload to your local machine
 git branch -M main
 git remote add origin git@github.com:Andriireva/bookshelf.git
-git push -u origin main
+git push -u origin main  // upload all commit to remote 
