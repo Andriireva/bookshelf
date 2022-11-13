@@ -10,6 +10,6 @@ public class HelloWorldSpringWeb {
 
     @GetMapping
     public String getHelloWorld() {
-        return "Hello World from Andrii";
+        return "Hello World from Andrii. It is updated Row";
     }
 }
