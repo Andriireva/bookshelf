@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Optional;
 
 // IoC
 // ORM - Object related mapping
@@ -37,60 +38,52 @@ public class BookRepository {
     }
 
     // If data is not found in repository we return null or return Optinal<> type ( java 8 feature)
-    public Book getBook(Long id) {
-
-
+    public Optional<Book> getBook(Long id) {
         // it should return book from DB...
         try {
             Book book = jdbcTemplate.queryForObject("select * from books where id=?", rowMapper, id);
-            return book;
+            return Optional.ofNullable(book);
         } catch (EmptyResultDataAccessException e) {
-            return null;
+            return Optional.empty();
         }
     }
 
     public Book createBook(Book book) {
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(new PreparedStatementCreator() {
-            @Override
-            public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO public.books(\n" +
-                                "\tname, page_numbers, published_date, illustrated, general_code)\n" +
-                                "\tVALUES (?, ?, ?, ?, ?)",
-                        new String[]{"id"});
-                preparedStatement.setString(1, book.getName());
-                preparedStatement.setInt(2, book.getPageNumbers());
-                preparedStatement.setTimestamp(3, Timestamp.from(book.getPublishedDate())); // static method from
-                preparedStatement.setBoolean(4, book.getIllustrated());
-                preparedStatement.setString(5, book.getGeneralCode());
+        jdbcTemplate.update(con -> {
+            PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO public.books(\n" +
+                            "\tname, page_numbers, published_date, illustrated, general_code)\n" +
+                            "\tVALUES (?, ?, ?, ?, ?)",
+                    new String[]{"id"});
+            preparedStatement.setString(1, book.getName());
+            preparedStatement.setInt(2, book.getPageNumbers());
+            preparedStatement.setTimestamp(3, Timestamp.from(book.getPublishedDate())); // static method from
+            preparedStatement.setBoolean(4, book.getIllustrated());
+            preparedStatement.setString(5, book.getGeneralCode());
 
-                return preparedStatement;
-            }
+            return preparedStatement;
         },
                 keyHolder);
 
         long generatedKey = keyHolder.getKey().longValue();
 
-        return getBook(generatedKey);
+        return getBook(generatedKey).get();
     }
 
-    public Book updateBook(Long id, Book book) {
-        jdbcTemplate.update(new PreparedStatementCreator() {
-                                @Override
-                                public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                                    PreparedStatement preparedStatement = con.prepareStatement("UPDATE public.books\n" +
-                                            "\tSET name=?, page_numbers=?, published_date=?, illustrated=?, general_code=?\n" +
-                                            "\tWHERE id = ?");
-                                    preparedStatement.setString(1, book.getName());
-                                    preparedStatement.setInt(2, book.getPageNumbers());
-                                    preparedStatement.setTimestamp(3, Timestamp.from(book.getPublishedDate())); // static method from
-                                    preparedStatement.setBoolean(4, book.getIllustrated());
-                                    preparedStatement.setString(5, book.getGeneralCode());
-                                    preparedStatement.setLong(6, id);
+    public Optional<Book> updateBook(Long id, Book book) {
+        jdbcTemplate.update(con -> {
+            PreparedStatement preparedStatement = con.prepareStatement("UPDATE public.books\n" +
+                    "\tSET name=?, page_numbers=?, published_date=?, illustrated=?, general_code=?\n" +
+                    "\tWHERE id = ?");
+            preparedStatement.setString(1, book.getName());
+            preparedStatement.setInt(2, book.getPageNumbers());
+            preparedStatement.setTimestamp(3, Timestamp.from(book.getPublishedDate())); // static method from
+            preparedStatement.setBoolean(4, book.getIllustrated());
+            preparedStatement.setString(5, book.getGeneralCode());
+            preparedStatement.setLong(6, id);
 
-                                    return preparedStatement;
-                                }
-                            });
+            return preparedStatement;
+        });
 
         return getBook(id);
     }

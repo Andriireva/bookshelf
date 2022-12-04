@@ -8,6 +8,8 @@ import com.areva.bookshelf.layers.exceptions.SemanticException;
 import com.areva.bookshelf.layers.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 // This class is use for logic ...
 // Example: make validation
 @Service  // It is just marker. it works the same as @Component
@@ -34,8 +36,9 @@ public class BookService {
         checkExisting(id);
         validate(bookDto);
 
-        Book createdBook = bookRepository.updateBook(id, bookConverter.fromDto(bookDto));
-        return bookConverter.fromDomain(createdBook);
+        return bookRepository.updateBook(id, bookConverter.fromDto(bookDto))
+                .map(b -> bookConverter.fromDomain(b))
+                .get();
     }
 
     public void deleteBook(Long id) {
@@ -50,11 +53,18 @@ public class BookService {
     }
 
     private void checkExisting(Long id) {
-        Book book = bookRepository.getBook(id);
-        if (book != null) {
-            System.out.println("deleteBook is called with id " + id);
-        } else {
-            throw new DataNotFoundException("Book with id " + id + " is not found");
-        }
+//        Book book = bookRepository.getBook(id);
+//        if (book != null) {
+//            System.out.println("deleteBook is called with id " + id);
+//        } else {
+//            throw new DataNotFoundException("Book with id " + id + " is not found");
+//        }
+        bookRepository
+                .getBook(id)
+                .map(b -> {
+                    System.out.println("checkExisting is called with id " + id);
+                    return b;
+                })
+                .orElseThrow(() -> new DataNotFoundException("Book with id " + id + " is not found"));
     }
 }
