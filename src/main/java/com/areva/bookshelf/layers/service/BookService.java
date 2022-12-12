@@ -8,7 +8,7 @@ import com.areva.bookshelf.layers.exceptions.SemanticException;
 import com.areva.bookshelf.layers.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 
 // This class is use for logic ...
 // Example: make validation
@@ -47,7 +47,7 @@ public class BookService {
     }
 
     private void validate(BookDto bookDto) {
-        if (bookDto.getPageNumbers() < 1) {
+        if (bookDto.getPageNumbers() == null || bookDto.getPageNumbers() < 1) {
             throw new SemanticException("Page numbers must be positive");
         }
     }
@@ -66,5 +66,18 @@ public class BookService {
                     return b;
                 })
                 .orElseThrow(() -> new DataNotFoundException("Book with id " + id + " is not found"));
+    }
+
+    public BookDto getBook(Long id) {
+        return bookRepository.getBook(id)
+                .map(b -> bookConverter.fromDomain(b))
+                .orElseThrow(() -> new DataNotFoundException("Book with id " + id + " is not found"));
+    }
+
+    public List<BookDto> getBooks() {
+        return bookRepository.getBooks()
+                .stream()
+                .map(book -> bookConverter.fromDomain(book))
+                .toList();
     }
 }

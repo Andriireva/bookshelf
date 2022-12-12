@@ -1,6 +1,7 @@
 package com.areva.bookshelf.layers.repository;
 
 import com.areva.bookshelf.layers.domain.Book;
+import com.areva.bookshelf.layers.dto.BookDto;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,6 +14,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 
 // IoC
@@ -90,5 +92,9 @@ public class BookRepository {
 
     public void deleteBook(Long id) {
         jdbcTemplate.update("delete from books where id = ?", id);
+    }
+
+    public List<Book> getBooks() {
+        return jdbcTemplate.query("select * from books", rowMapper);
     }
 }
