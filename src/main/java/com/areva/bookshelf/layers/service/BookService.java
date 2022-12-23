@@ -20,6 +20,7 @@ public class BookService {
 
     public BookService(BookRepository bookRepository,
                        BookConverter bookConverter) {
+        System.out.println("BookService constructor is called");
         this.bookRepository = bookRepository;
         this.bookConverter = bookConverter;
     }
