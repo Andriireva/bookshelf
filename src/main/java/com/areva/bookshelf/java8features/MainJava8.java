@@ -4,7 +4,6 @@ import com.areva.bookshelf.layers.domain.Book;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MainJava8 {

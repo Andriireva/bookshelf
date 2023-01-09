@@ -5,6 +5,7 @@ import com.areva.bookshelf.layers.domain.Book;
 import com.areva.bookshelf.layers.dto.BookDto;
 import com.areva.bookshelf.layers.exceptions.DataNotFoundException;
 import com.areva.bookshelf.layers.exceptions.SemanticException;
+import com.areva.bookshelf.layers.repository.BookRepo;
 import com.areva.bookshelf.layers.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +16,16 @@ import java.util.List;
 @Service  // It is just marker. it works the same as @Component
 public class BookService {
 
-    private BookRepository bookRepository;
+    //    private BookRepository bookRepository;
+    private BookRepo bookRepo;
     private BookConverter bookConverter;
 
     public BookService(BookRepository bookRepository,
-                       BookConverter bookConverter) {
+                       BookConverter bookConverter,
+                       BookRepo bookRepo) {
         System.out.println("BookService constructor is called");
-        this.bookRepository = bookRepository;
+        this.bookRepo = bookRepo;
+//        this.bookRepository = bookRepository;
         this.bookConverter = bookConverter;
     }
 
@@ -29,22 +33,29 @@ public class BookService {
         // some semantic validation
         validate(bookDto);
 
-        Book createdBook = bookRepository.createBook(bookConverter.fromDto(bookDto));
+        // when Entity comes to save method with @Id is null it treated as insert SQL statement
+        Book createdBook = bookRepo.save(bookConverter.fromDto(bookDto)); // <-
         return bookConverter.fromDomain(createdBook);
     }
 
     public BookDto updateBook(Long id, BookDto bookDto) {
-        checkExisting(id);
+//        checkExisting(id);
         validate(bookDto);
 
-        return bookRepository.updateBook(id, bookConverter.fromDto(bookDto))
-                .map(b -> bookConverter.fromDomain(b))
-                .get();
+        // when Entity comes to save method with @Id filled it treated as update SQL statement
+        return bookRepo.findById(id)
+                .map(book -> {
+                    Book foundBook = bookConverter.fromDto(bookDto);
+                    foundBook.setId(book.getId());
+                    return bookRepo.save(foundBook);
+                })
+                .map(savedBook -> bookConverter.fromDomain(savedBook))
+                .orElseThrow(() -> new DataNotFoundException("Book with id " + id + " is not found"));
     }
 
     public void deleteBook(Long id) {
         checkExisting(id);
-        bookRepository.deleteBook(id);
+        bookRepo.deleteById(id);
     }
 
     private void validate(BookDto bookDto) {
@@ -54,14 +65,8 @@ public class BookService {
     }
 
     private void checkExisting(Long id) {
-//        Book book = bookRepository.getBook(id);
-//        if (book != null) {
-//            System.out.println("deleteBook is called with id " + id);
-//        } else {
-//            throw new DataNotFoundException("Book with id " + id + " is not found");
-//        }
-        bookRepository
-                .getBook(id)
+        bookRepo
+                .findById(id)
                 .map(b -> {
                     System.out.println("checkExisting is called with id " + id);
                     return b;
@@ -70,13 +75,27 @@ public class BookService {
     }
 
     public BookDto getBook(Long id) {
-        return bookRepository.getBook(id)
+        return bookRepo.findById(id)
                 .map(b -> bookConverter.fromDomain(b))
                 .orElseThrow(() -> new DataNotFoundException("Book with id " + id + " is not found"));
     }
 
     public List<BookDto> getBooks() {
-        return bookRepository.getBooks()
+        return bookRepo.findAll()
+                .stream()
+                .map(book -> bookConverter.fromDomain(book))
+                .toList();
+    }
+
+    public List<BookDto> getBooksStartWith(String nameStartWith) {
+        return bookRepo.findAllByNameStartsWith(nameStartWith)
+                .stream()
+                .map(book -> bookConverter.fromDomain(book))
+                .toList();
+    }
+
+    public List<BookDto> searchByName(String name) {
+        return bookRepo.findMyBooks(name)
                 .stream()
                 .map(book -> bookConverter.fromDomain(book))
                 .toList();

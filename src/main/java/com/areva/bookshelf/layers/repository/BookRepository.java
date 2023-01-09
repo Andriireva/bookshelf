@@ -1,18 +1,13 @@
 package com.areva.bookshelf.layers.repository;
 
 import com.areva.bookshelf.layers.domain.Book;
-import com.areva.bookshelf.layers.dto.BookDto;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +31,6 @@ public class BookRepository {
 //        System.out.println("Data source is + " + ((HikariDataSource)jdbcTemplate.getDataSource()));
 //        System.out.println("Data source DriverClassName is + " + ((HikariDataSource)jdbcTemplate.getDataSource()).getDriverClassName());
 //        System.out.println("Data source url is + " + ((HikariDataSource)jdbcTemplate.getDataSource()).getJdbcUrl());
-        this.rowMapper = bookRowMapper1;
     }
 
     // If data is not found in repository we return null or return Optinal<> type ( java 8 feature)

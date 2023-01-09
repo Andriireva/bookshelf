@@ -31,8 +31,17 @@ public class BookController {
     // REST best practices
     // GET http://localhost:8080/books/
     @RequestMapping(method = RequestMethod.GET)
-    public List<BookDto> getBooks() {
-        return bookService.getBooks();
+    public List<BookDto> getBooks(@RequestParam("nameStartWith") String nameStartWith) {
+        if (nameStartWith == null) {
+            return bookService.getBooks();
+        } else {
+            return bookService.getBooksStartWith(nameStartWith);
+        }
+    }
+
+    @RequestMapping(path ="/search", method = RequestMethod.GET)
+    public List<BookDto> search(@RequestParam("name") String name) {
+        return bookService.searchByName(name);
     }
 
     // POST http://localhost:8080/books/
