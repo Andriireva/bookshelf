@@ -20,8 +20,8 @@ public class ApplicationReadyServiceExamples {
     @EventListener(ApplicationReadyEvent.class)
     public void doSomethingAfterStartup() {
         try {
-            BookDto book = bookService.createBook(new BookDto("Lost Arkh 333", 200, Instant.now(), false, "HHHHH1123123123"));
-            System.out.println(book);
+//            BookDto book = bookService.createBook(new BookDto("Lost Arkh 333", 200, Instant.now(), false, "HHHHH1123123123"));
+//            System.out.println(book);
         } catch (ApplicationException e) {
             System.out.println(e.getMessage());
         }

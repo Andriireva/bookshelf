@@ -22,17 +22,17 @@ public class ApplicationReadyRepositoryExamples {
     // be run ONCE when project is ready
     @EventListener(ApplicationReadyEvent.class)
     public void doSomethingAfterStartup() {
-        Book book = bookRepository.getBook(11L).get();
-        System.out.println(book.toString());
-
-        Book bookTobeCreated = new Book("Lord of the Ring 2", 1500, Instant.now(), false, "GGGWWWW%$3333");
-        Book createdBook = bookRepository.createBook(bookTobeCreated);
-        System.out.println(createdBook);
-
-        Book bookToBeUpdated = new Book("Lord of the Ring 2 UPDATED", 3000, Instant.now(), true, "UPDATED _GGGWWWW%$3333");
-        Book updatedBook = bookRepository.updateBook(11L, bookToBeUpdated).get();
-        System.out.println(updatedBook);
-
-        bookRepository.deleteBook(2L);
+//        Book book = bookRepository.getBook(11L).get();
+//        System.out.println(book.toString());
+//
+//        Book bookTobeCreated = new Book("Lord of the Ring 2", 1500, Instant.now(), false, "GGGWWWW%$3333");
+//        Book createdBook = bookRepository.createBook(bookTobeCreated);
+//        System.out.println(createdBook);
+//
+//        Book bookToBeUpdated = new Book("Lord of the Ring 2 UPDATED", 3000, Instant.now(), true, "UPDATED _GGGWWWW%$3333");
+//        Book updatedBook = bookRepository.updateBook(11L, bookToBeUpdated).get();
+//        System.out.println(updatedBook);
+//
+//        bookRepository.deleteBook(2L);
     }
 }

@@ -5,6 +5,8 @@ import com.areva.bookshelf.layers.domain.Book;
 import com.areva.bookshelf.layers.dto.BookDto;
 import com.areva.bookshelf.layers.exceptions.DataNotFoundException;
 import com.areva.bookshelf.layers.exceptions.SemanticException;
+import com.areva.bookshelf.layers.jms.JmsBookDeleteDto;
+import com.areva.bookshelf.layers.jms.JmsBookSender;
 import com.areva.bookshelf.layers.repository.BookRepo;
 import com.areva.bookshelf.layers.repository.BookRepository;
 import org.springframework.stereotype.Service;
@@ -19,10 +21,13 @@ public class BookService {
     //    private BookRepository bookRepository;
     private BookRepo bookRepo;
     private BookConverter bookConverter;
+    private JmsBookSender notifier;
 
     public BookService(BookRepository bookRepository,
                        BookConverter bookConverter,
-                       BookRepo bookRepo) {
+                       BookRepo bookRepo,
+                       JmsBookSender sender) {
+        this.notifier = sender;
         System.out.println("BookService constructor is called");
         this.bookRepo = bookRepo;
 //        this.bookRepository = bookRepository;
@@ -54,8 +59,11 @@ public class BookService {
     }
 
     public void deleteBook(Long id) {
-        checkExisting(id);
+        BookDto bookToDelete = checkExisting(id);
         bookRepo.deleteById(id);
+        notifier.sendDeleteMessage(new JmsBookDeleteDto(bookToDelete.getGeneralCode(),
+                bookToDelete.getPublishedDate().toString()
+        ));
     }
 
     private void validate(BookDto bookDto) {
@@ -64,13 +72,14 @@ public class BookService {
         }
     }
 
-    private void checkExisting(Long id) {
-        bookRepo
+    private BookDto checkExisting(Long id) {
+        return bookRepo
                 .findById(id)
                 .map(b -> {
                     System.out.println("checkExisting is called with id " + id);
                     return b;
                 })
+                .map(b -> bookConverter.fromDomain(b))
                 .orElseThrow(() -> new DataNotFoundException("Book with id " + id + " is not found"));
     }
 
@@ -99,5 +108,21 @@ public class BookService {
                 .stream()
                 .map(book -> bookConverter.fromDomain(book))
                 .toList();
+    }
+
+    public BookDto updateBook(String generalCode, BookDto bookDto) {
+        // find book be general code/
+        // update it
+        validate(bookDto);
+
+        // when Entity comes to save method with @Id filled it treated as update SQL statement
+        return bookRepo.findByGeneralCode(generalCode)
+                .map(book -> {
+                    Book foundBook = bookConverter.fromDto(bookDto);
+                    foundBook.setId(book.getId());
+                    return bookRepo.save(foundBook);
+                })
+                .map(savedBook -> bookConverter.fromDomain(savedBook))
+                .orElseThrow(() -> new DataNotFoundException("Book with id " + generalCode + " is not found"));
     }
 }
